@@ -17,6 +17,7 @@ const gameState = {
   roundActive: false,
   roundStartTime: null,
   revealProgress: 0,
+  revealInterval: null,
   stadiums: [], // Will be populated with stadium data
   guesses: {}
 };
@@ -135,19 +136,20 @@ io.on('connection', (socket) => {
     });
 
     // Progressive reveal over 30 seconds
-    const revealInterval = setInterval(() => {
+    if (gameState.revealInterval) {
+      clearInterval(gameState.revealInterval);
+    }
+
+    gameState.revealInterval = setInterval(() => {
       gameState.revealProgress += 1;
       io.emit('revealProgress', gameState.revealProgress);
 
       if (gameState.revealProgress >= 30) {
-        clearInterval(revealInterval);
+        clearInterval(gameState.revealInterval);
       }
     }, 1000);
 
-    // Auto-end round after 30 seconds
-    setTimeout(() => {
-      endCurrentRound();
-    }, 30000);
+    // Host controls when round ends - no auto-end
   });
 
   socket.on('endRound', () => {
@@ -175,6 +177,13 @@ function endCurrentRound() {
   if (!gameState.roundActive) return;
 
   gameState.roundActive = false;
+
+  // Clear reveal interval when round ends
+  if (gameState.revealInterval) {
+    clearInterval(gameState.revealInterval);
+    gameState.revealInterval = null;
+  }
+
   const currentStadium = gameState.stadiums[gameState.currentRound];
 
   const results = Object.keys(gameState.players).map(playerId => {
