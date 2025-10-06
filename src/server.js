@@ -54,9 +54,13 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
 
 // Calculate score based on distance and time
 function calculateScore(distance, timeRemaining) {
-  const maxDistance = 12451; // Approximate max distance on Earth (half circumference in miles)
-  const baseScore = Math.max(0, 5000 * (1 - (distance / maxDistance)));
-  const timeMultiplier = 1 + (timeRemaining / 30); // Max 2x multiplier at 30s remaining
+  // Base score: 5000 - (1 point per mile)
+  const baseScore = Math.max(0, 5000 - distance);
+
+  // Time multiplier: 100% at instant guess, decreases by 1% per second to minimum 70%
+  const secondsElapsed = 30 - timeRemaining;
+  const timeMultiplier = Math.max(0.7, 1.0 - (0.01 * secondsElapsed));
+
   return Math.round(baseScore * timeMultiplier);
 }
 

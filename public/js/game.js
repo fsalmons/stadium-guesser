@@ -186,15 +186,14 @@ socket.on('roundStart', (data) => {
 socket.on('revealProgress', (progress) => {
     if (isHost) return; // Host doesn't see the game
 
-    // Smooth blur reduction over full 30 seconds
+    // Reveal over 10 seconds, then fully visible
     const overlay = document.getElementById('revealOverlay');
     const stadiumImg = document.getElementById('stadiumImage');
 
-    // Linear reveal over 30 seconds, start lighter (25px blur)
-    const percentage = progress / 30;
+    // Fully revealed after 10 seconds
+    const revealTime = 10;
+    const percentage = Math.min(1, progress / revealTime);
     const blurAmount = Math.max(0, 25 * (1 - percentage));
-
-    // Overlay starts lighter (0.6 opacity)
     const overlayOpacity = Math.max(0, 0.6 * (1 - percentage));
 
     overlay.style.opacity = overlayOpacity;
