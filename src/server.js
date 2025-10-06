@@ -164,6 +164,28 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('restartGame', () => {
+    // Reset game state but keep players
+    gameState.currentRound = 0;
+    gameState.roundActive = false;
+    gameState.revealProgress = 0;
+    gameState.guesses = {};
+
+    if (gameState.revealInterval) {
+      clearInterval(gameState.revealInterval);
+      gameState.revealInterval = null;
+    }
+
+    // Reset all player scores
+    Object.keys(gameState.players).forEach(playerId => {
+      gameState.players[playerId].score = 0;
+      gameState.players[playerId].roundScores = [];
+    });
+
+    // Notify all clients
+    io.emit('gameRestarted');
+  });
+
   socket.on('disconnect', () => {
     if (gameState.players[socket.id]) {
       const playerName = gameState.players[socket.id].name;

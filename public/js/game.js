@@ -63,6 +63,7 @@ let hostState = 'start'; // 'start', 'playing', 'results'
 
 if (isHost) {
     const hostBtn = document.getElementById('hostActionBtn');
+    const restartBtn = document.getElementById('restartGameBtn');
 
     document.getElementById('startGameBtn').addEventListener('click', () => {
         socket.emit('startRound');
@@ -82,6 +83,12 @@ if (isHost) {
             socket.emit('startRound');
             hostState = 'playing';
             hostBtn.textContent = 'End Round';
+        }
+    });
+
+    restartBtn.addEventListener('click', () => {
+        if (confirm('Restart the entire game? This will reset all scores and start from Round 1.')) {
+            socket.emit('restartGame');
         }
     });
 }
@@ -325,6 +332,31 @@ socket.on('gameOver', (data) => {
             </div>
         `;
     }).join('');
+});
+
+socket.on('gameRestarted', () => {
+    // Reset all client state
+    currentGuess = null;
+    if (guessMarker) {
+        map.removeLayer(guessMarker);
+        guessMarker = null;
+    }
+    if (resultMap) {
+        resultMap.remove();
+        resultMap = null;
+    }
+
+    document.getElementById('yourScore').textContent = '0';
+
+    if (isHost) {
+        hostState = 'start';
+        document.getElementById('hostActionBtn').style.display = 'none';
+        showScreen('lobby');
+        document.getElementById('lobbyMessage').textContent = 'Game restarted! Click START GAME when ready!';
+        document.getElementById('lobbyMessage').style.color = '#FFD700';
+    } else {
+        showScreen('lobby');
+    }
 });
 
 function showScreen(screen) {
