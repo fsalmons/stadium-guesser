@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stadium Guesser</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <!-- Join Screen -->
+    <div id="joinScreen" class="screen active">
+        <div class="join-container">
+            <h1>🏟️ Stadium Guesser</h1>
+            <p>Guess the stadium location!</p>
+            <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+            <button id="joinBtn">Join Game</button>
+            <div id="waitingPlayers" style="display: none; margin-top: 20px;">
+                <p>Players waiting: <span id="playerCount">0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lobby/Waiting Screen -->
+    <div id="lobbyScreen" class="screen">
+        <div class="join-container">
+            <h1>🏟️ Ready to Play!</h1>
+            <p id="lobbyMessage">Waiting for host to start the game...</p>
+            <div style="margin-top: 30px;">
+                <h3>Players in Lobby:</h3>
+                <div id="lobbyPlayerList" style="margin-top: 15px;"></div>
+            </div>
+            <div id="hostControls" style="display: none; margin-top: 40px;">
+                <button id="startGameBtn" style="padding: 20px 40px; font-size: 1.5em; background: #FF5722; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">🎮 START GAME 🎮</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Host Control Panel -->
+    <div id="hostPanel" style="display: none;">
+        <button id="hostActionBtn" style="display: none; padding: 15px 30px; font-size: 1.2em; background: #FF5722; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">Next</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen">
+        <div class="game-header">
+            <div class="round-info">
+                Round <span id="currentRound">1</span> / <span id="totalRounds">10</span>
+            </div>
+            <div class="timer" id="timer">30</div>
+            <div class="your-score">
+                Your Score: <span id="yourScore">0</span>
+            </div>
+        </div>
+
+        <div class="game-content">
+            <!-- Image Reveal Container -->
+            <div class="image-container">
+                <img id="stadiumImage" src="" alt="Stadium">
+                <div id="revealOverlay" class="reveal-overlay"></div>
+                <div id="guessStatus" class="guess-status"></div>
+            </div>
+
+            <!-- Map Container -->
+            <div class="map-container">
+                <div id="map"></div>
+                <button id="submitGuess" disabled>Submit Guess</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="leaderboardScreen" class="screen">
+        <div class="leaderboard-container">
+            <h2 id="stadiumReveal"></h2>
+            <h3>Round Results</h3>
+            <div id="roundResults"></div>
+            <h3>Overall Leaderboard</h3>
+            <div id="overallLeaderboard"></div>
+            <div id="mapResult" style="width: 100%; height: 300px; margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="screen">
+        <div class="gameover-container">
+            <h1>🏆 Game Over!</h1>
+            <h3>Final Standings</h3>
+            <div id="finalStandings"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

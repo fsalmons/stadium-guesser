@@ -1,0 +1,322 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #fff;
+}
+
+.screen {
+    display: none;
+    min-height: 100vh;
+}
+
+.screen.active {
+    display: block;
+}
+
+/* Join Screen */
+.join-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 100px 20px;
+    text-align: center;
+}
+
+.join-container h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+}
+
+.join-container p {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+#playerName {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+#joinBtn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2em;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-weight: bold;
+}
+
+#joinBtn:hover {
+    background: #45a049;
+}
+
+/* Host Panel */
+#hostPanel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+#hostPanel button {
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 1em;
+    background: #FF5722;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#hostPanel button:hover {
+    background: #E64A19;
+}
+
+/* Game Screen */
+.game-header {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.round-info {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.timer {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.your-score {
+    font-size: 1.3em;
+    font-weight: bold;
+}
+
+.game-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: calc(100vh - 80px);
+    gap: 0;
+}
+
+/* Image Container */
+.image-container {
+    position: relative;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#stadiumImage {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.reveal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 0.3s ease-out;
+}
+
+#stadiumImage {
+    filter: blur(25px);
+    transition: filter 0.3s ease-out;
+}
+
+.guess-status {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+/* Map Container */
+.map-container {
+    display: flex;
+    flex-direction: column;
+    background: #2c3e50;
+}
+
+#map {
+    flex: 1;
+    width: 100%;
+}
+
+#submitGuess {
+    padding: 20px;
+    font-size: 1.3em;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+#submitGuess:hover:not(:disabled) {
+    background: #45a049;
+}
+
+#submitGuess:disabled {
+    background: #666;
+    cursor: not-allowed;
+}
+
+/* Leaderboard Screen */
+.leaderboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.leaderboard-container h2 {
+    font-size: 2.5em;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.leaderboard-container h3 {
+    font-size: 1.8em;
+    margin: 30px 0 15px 0;
+    text-align: center;
+}
+
+#roundResults, #overallLeaderboard {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.result-row, .leaderboard-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 150px 120px;
+    padding: 12px;
+    margin: 5px 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    align-items: center;
+}
+
+.leaderboard-row {
+    grid-template-columns: 60px 1fr 120px;
+}
+
+.result-row.highlight, .leaderboard-row.highlight {
+    background: rgba(76, 175, 80, 0.3);
+    border: 2px solid #4CAF50;
+}
+
+.rank {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.name {
+    font-size: 1.2em;
+}
+
+.distance {
+    text-align: right;
+    color: #aaa;
+}
+
+.score {
+    text-align: right;
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+/* Game Over Screen */
+.gameover-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.gameover-container h1 {
+    font-size: 3.5em;
+    margin-bottom: 20px;
+}
+
+.gameover-container h3 {
+    font-size: 1.8em;
+    margin: 30px 0 15px 0;
+}
+
+#finalStandings {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.final-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 150px;
+    padding: 15px;
+    margin: 8px 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    font-size: 1.2em;
+}
+
+.final-row.highlight {
+    background: rgba(76, 175, 80, 0.3);
+    border: 2px solid #4CAF50;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .game-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+
+    .result-row, .leaderboard-row {
+        grid-template-columns: 50px 1fr 100px 100px;
+        font-size: 0.9em;
+    }
+
+    .leaderboard-row {
+        grid-template-columns: 50px 1fr 100px;
+    }
+}
