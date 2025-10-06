@@ -13,7 +13,7 @@ app.use(express.static('public'));
 const gameState = {
   players: {},
   currentRound: 0,
-  totalRounds: 3,
+  totalRounds: 10,
   roundActive: false,
   roundStartTime: null,
   revealProgress: 0,
@@ -26,15 +26,14 @@ const gameState = {
 const stadiums = [
   { name: 'Camp Nou', lat: 41.3809, lng: 2.1228, image: 'camp-nou.png' },
   { name: 'Allianz Arena', lat: 48.2188, lng: 11.6247, image: 'allianz.png' },
-  { name: 'Wembley Stadium', lat: 51.5560, lng: -0.2795, image: 'wembley.png' }
-  // { name: 'Tottenham Hotspur Stadium', lat: 51.6043, lng: -0.0665, image: 'tottenham.png' },
-  // { name: 'Santiago Bernabéu', lat: 40.4531, lng: -3.6883, image: 'bernabeu.png' },
-  // { name: 'Old Trafford', lat: 53.4631, lng: -2.2913, image: 'old-trafford.png' },
-  // { name: 'San Siro', lat: 45.4781, lng: 9.1240, image: 'san-siro.png' },
-  // { name: 'Signal Iduna Park', lat: 51.4925, lng: 7.4517, image: 'signal-iduna.png' },
-  // { name: 'Maracanã', lat: -22.9122, lng: -43.2302, image: 'maracana.png' },
-  // { name: 'Azteca Stadium', lat: 19.3030, lng: -99.1506, image: 'azteca.png' },
-  // { name: 'La Bombonera', lat: -34.6355, lng: -58.3645, image: 'bombonera.png' }
+  { name: 'Wembley Stadium', lat: 51.5560, lng: -0.2795, image: 'wembley.png' },
+  { name: 'Santiago Bernabéu', lat: 40.4531, lng: -3.6883, image: 'bernabeu.png' },
+  { name: 'Old Trafford', lat: 53.4631, lng: -2.2913, image: 'old-trafford.png' },
+  { name: 'San Siro', lat: 45.4781, lng: 9.1240, image: 'san-siro.png' },
+  { name: 'Signal Iduna Park', lat: 51.4925, lng: 7.4517, image: 'signal-iduna.png' },
+  { name: 'Maracanã', lat: -22.9122, lng: -43.2302, image: 'maracana.png' },
+  { name: 'Azteca Stadium', lat: 19.3030, lng: -99.1506, image: 'azteca.png' },
+  { name: 'La Bombonera', lat: -34.6355, lng: -58.3645, image: 'bombonera.png' }
 ];
 
 // Use stadiums in order (sorted by difficulty)
