@@ -68,9 +68,29 @@ io.on('connection', (socket) => {
   console.log('New connection:', socket.id);
 
   socket.on('joinGame', (playerName) => {
+    // Validate player name
+    if (!playerName || typeof playerName !== 'string' || playerName.trim().length === 0) {
+      return;
+    }
+
+    // Max 50 players
+    if (Object.keys(gameState.players).length >= 50) {
+      socket.emit('error', { message: 'Game is full' });
+      return;
+    }
+
+    // Prevent duplicate names
+    const existingPlayer = Object.values(gameState.players).find(
+      p => p.name.toLowerCase() === playerName.trim().toLowerCase()
+    );
+    if (existingPlayer) {
+      socket.emit('error', { message: 'Name already taken' });
+      return;
+    }
+
     gameState.players[socket.id] = {
       id: socket.id,
-      name: playerName,
+      name: playerName.trim().substring(0, 20), // Max 20 chars
       score: 0,
       roundScores: []
     };
@@ -90,12 +110,22 @@ io.on('connection', (socket) => {
   });
 
   socket.on('submitGuess', ({ lat, lng, timeRemaining }) => {
+    // Validate round is active
     if (!gameState.roundActive || gameState.guesses[socket.id]) return;
 
     // Check if player exists (host doesn't play)
     if (!gameState.players[socket.id]) return;
 
+    // Validate coordinates
+    if (typeof lat !== 'number' || typeof lng !== 'number') return;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+
+    // Validate time remaining
+    if (typeof timeRemaining !== 'number' || timeRemaining < 0 || timeRemaining > 30) return;
+
     const currentStadium = gameState.stadiums[gameState.currentRound];
+    if (!currentStadium) return;
+
     const distance = calculateDistance(currentStadium.lat, currentStadium.lng, lat, lng);
     const score = calculateScore(distance, timeRemaining);
 
@@ -160,11 +190,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('nextRound', () => {
-    gameState.currentRound++;
-    io.emit('readyForNextRound', {
-      currentRound: gameState.currentRound,
-      totalRounds: gameState.totalRounds
-    });
+    if (gameState.currentRound < gameState.totalRounds) {
+      gameState.currentRound++;
+      io.emit('readyForNextRound', {
+        currentRound: gameState.currentRound,
+        totalRounds: gameState.totalRounds
+      });
+    }
   });
 
   socket.on('restartGame', () => {
@@ -210,28 +242,42 @@ function endCurrentRound() {
   }
 
   const currentStadium = gameState.stadiums[gameState.currentRound];
+  if (!currentStadium) {
+    console.error('Stadium not found for round', gameState.currentRound);
+    return;
+  }
 
-  const results = Object.keys(gameState.players).map(playerId => {
-    const player = gameState.players[playerId];
-    const guess = gameState.guesses[playerId];
+  try {
+    const results = Object.keys(gameState.players).map(playerId => {
+      const player = gameState.players[playerId];
+      const guess = gameState.guesses[playerId];
 
-    return {
-      playerName: player.name,
-      score: guess ? guess.score : 0,
-      distance: guess ? Math.round(guess.distance) : null,
-      guessLat: guess ? guess.lat : null,
-      guessLng: guess ? guess.lng : null,
-      totalScore: player.score
-    };
-  }).sort((a, b) => b.score - a.score);
+      if (!player) return null;
 
-  io.emit('roundEnd', {
-    stadiumName: currentStadium.name,
-    stadiumLat: currentStadium.lat,
-    stadiumLng: currentStadium.lng,
-    results,
-    leaderboard: Object.values(gameState.players).sort((a, b) => b.score - a.score)
-  });
+      return {
+        playerName: player.name,
+        score: guess ? guess.score : 0,
+        distance: guess ? Math.round(guess.distance) : null,
+        guessLat: guess ? guess.lat : null,
+        guessLng: guess ? guess.lng : null,
+        totalScore: player.score
+      };
+    }).filter(r => r !== null).sort((a, b) => b.score - a.score);
+
+    const leaderboard = Object.values(gameState.players)
+      .filter(p => p && p.name)
+      .sort((a, b) => b.score - a.score);
+
+    io.emit('roundEnd', {
+      stadiumName: currentStadium.name,
+      stadiumLat: currentStadium.lat,
+      stadiumLng: currentStadium.lng,
+      results,
+      leaderboard
+    });
+  } catch (error) {
+    console.error('Error ending round:', error);
+  }
 }
 
 const PORT = process.env.PORT || 3000;

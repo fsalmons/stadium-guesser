@@ -60,20 +60,32 @@ playerNameInput.addEventListener('keypress', (e) => {
 
 // Host controls - single button that adapts
 let hostState = 'start'; // 'start', 'playing', 'results'
+let buttonCooldown = false;
 
 if (isHost) {
     const hostBtn = document.getElementById('hostActionBtn');
     const restartBtn = document.getElementById('restartGameBtn');
+    const startGameBtn = document.getElementById('startGameBtn');
 
-    document.getElementById('startGameBtn').addEventListener('click', () => {
+    startGameBtn.addEventListener('click', () => {
+        if (buttonCooldown) return;
+        buttonCooldown = true;
+        startGameBtn.disabled = true;
+
         socket.emit('startRound');
         document.getElementById('hostPanel').style.display = 'block';
         hostState = 'playing';
         hostBtn.textContent = 'End Round';
         hostBtn.style.display = 'inline-block';
+
+        setTimeout(() => { buttonCooldown = false; }, 1000);
     });
 
     hostBtn.addEventListener('click', () => {
+        if (buttonCooldown) return;
+        buttonCooldown = true;
+        hostBtn.disabled = true;
+
         if (hostState === 'playing') {
             socket.emit('endRound');
             hostState = 'results';
@@ -84,11 +96,23 @@ if (isHost) {
             hostState = 'playing';
             hostBtn.textContent = 'End Round';
         }
+
+        setTimeout(() => {
+            buttonCooldown = false;
+            hostBtn.disabled = false;
+        }, 1000);
     });
 
     restartBtn.addEventListener('click', () => {
+        if (buttonCooldown) return;
         if (confirm('Restart the entire game? This will reset all scores and start from Round 1.')) {
+            buttonCooldown = true;
+            restartBtn.disabled = true;
             socket.emit('restartGame');
+            setTimeout(() => {
+                buttonCooldown = false;
+                restartBtn.disabled = false;
+            }, 2000);
         }
     });
 }
@@ -96,30 +120,43 @@ if (isHost) {
 // Initialize map
 function initMap() {
     if (!map) {
-        map = L.map('map').setView([20, 0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
+        try {
+            map = L.map('map').setView([20, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
 
-        map.on('click', (e) => {
-            if (currentGuess) return; // Already guessed
+            map.on('click', (e) => {
+                if (currentGuess) return; // Already guessed
 
-            const { lat, lng } = e.latlng;
+                const { lat, lng } = e.latlng;
 
-            if (guessMarker) {
-                map.removeLayer(guessMarker);
-            }
+                if (guessMarker) {
+                    map.removeLayer(guessMarker);
+                }
 
-            guessMarker = L.marker([lat, lng]).addTo(map);
-            submitGuessBtn.disabled = false;
+                guessMarker = L.marker([lat, lng]).addTo(map);
+                submitGuessBtn.disabled = false;
 
-            submitGuessBtn.onclick = () => {
-                currentGuess = { lat, lng };
-                socket.emit('submitGuess', { lat, lng, timeRemaining });
-                submitGuessBtn.disabled = true;
-                submitGuessBtn.textContent = 'Guess Submitted!';
-            };
-        });
+                submitGuessBtn.onclick = () => {
+                    if (currentGuess) return; // Double-click protection
+                    currentGuess = { lat, lng };
+
+                    // Validate coordinates
+                    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                        alert('Invalid coordinates');
+                        return;
+                    }
+
+                    socket.emit('submitGuess', { lat, lng, timeRemaining: Math.max(0, timeRemaining) });
+                    submitGuessBtn.disabled = true;
+                    submitGuessBtn.textContent = 'Guess Submitted!';
+                };
+            });
+        } catch (error) {
+            console.error('Map initialization failed:', error);
+        }
     }
 }
 
@@ -135,14 +172,34 @@ socket.on('gameState', (state) => {
 
 function updateLobbyPlayerList(players) {
     const lobbyList = document.getElementById('lobbyPlayerList');
-    if (!lobbyList) return;
+    if (!lobbyList || !Array.isArray(players)) return;
 
-    lobbyList.innerHTML = players.map((player, index) => `
-        <div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.2); border-radius: 5px; font-size: 1.1em;">
-            ${index + 1}. ${player.name}
-        </div>
-    `).join('');
+    try {
+        lobbyList.innerHTML = players.map((player, index) => `
+            <div style="padding: 10px; margin: 5px 0; background: rgba(255,255,255,0.2); border-radius: 5px; font-size: 1.1em;">
+                ${index + 1}. ${player.name || 'Unknown'}
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error updating lobby:', error);
+    }
 }
+
+// Error handling
+socket.on('error', (data) => {
+    if (data.message === 'Name already taken') {
+        alert('That name is already taken. Please choose a different name.');
+        location.reload();
+    }
+});
+
+socket.on('connect_error', () => {
+    console.error('Connection error');
+});
+
+socket.on('disconnect', () => {
+    console.log('Disconnected from server');
+});
 
 socket.on('roundStart', (data) => {
     // Host doesn't play - stays in lobby watching
