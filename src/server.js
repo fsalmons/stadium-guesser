@@ -92,6 +92,9 @@ io.on('connection', (socket) => {
   socket.on('submitGuess', ({ lat, lng, timeRemaining }) => {
     if (!gameState.roundActive || gameState.guesses[socket.id]) return;
 
+    // Check if player exists (host doesn't play)
+    if (!gameState.players[socket.id]) return;
+
     const currentStadium = gameState.stadiums[gameState.currentRound];
     const distance = calculateDistance(currentStadium.lat, currentStadium.lng, lat, lng);
     const score = calculateScore(distance, timeRemaining);
